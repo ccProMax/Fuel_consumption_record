@@ -52,8 +52,8 @@ interface FuelRecordDao {
         SELECT 
             CASE 
                 WHEN COUNT(*) >= 2 THEN 
-                    (SELECT mileage FROM fuel_records ORDER BY date DESC LIMIT 1) - 
-                    (SELECT mileage FROM fuel_records ORDER BY date ASC LIMIT 1)
+                    (SELECT MAX(mileage) FROM fuel_records) - 
+                    (SELECT MIN(mileage) FROM fuel_records)
                 ELSE 0.0 
             END 
         FROM fuel_records
@@ -63,12 +63,12 @@ interface FuelRecordDao {
     @Query("""
         SELECT 
             CASE 
-                WHEN (SELECT mileage FROM fuel_records ORDER BY date DESC LIMIT 1) - 
-                     (SELECT mileage FROM fuel_records ORDER BY date ASC LIMIT 1) > 0 
+                WHEN (SELECT MAX(mileage) FROM fuel_records) - 
+                     (SELECT MIN(mileage) FROM fuel_records) > 0 
                 THEN 
                     (SELECT SUM(fuelAmount) FROM fuel_records) / 
-                    ((SELECT mileage FROM fuel_records ORDER BY date DESC LIMIT 1) - 
-                     (SELECT mileage FROM fuel_records ORDER BY date ASC LIMIT 1)) * 100
+                    ((SELECT MAX(mileage) FROM fuel_records) - 
+                     (SELECT MIN(mileage) FROM fuel_records)) * 100
                 ELSE 0.0 
             END 
         FROM fuel_records
@@ -187,8 +187,8 @@ interface FuelRecordDao {
         SELECT 
             CASE 
                 WHEN COUNT(*) >= 2 THEN 
-                    (SELECT mileage FROM fuel_records WHERE date >= :startDate ORDER BY date DESC LIMIT 1) - 
-                    (SELECT mileage FROM fuel_records WHERE date >= :startDate ORDER BY date ASC LIMIT 1)
+                    (SELECT MAX(mileage) FROM fuel_records WHERE date >= :startDate) - 
+                    (SELECT MIN(mileage) FROM fuel_records WHERE date >= :startDate)
                 ELSE 0.0 
             END 
         FROM fuel_records
