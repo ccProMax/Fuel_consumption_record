@@ -220,10 +220,10 @@ interface FuelRecordDao {
      * 获取指定时间范围内的加油记录（用于油价曲线）
      */
     @Query("""
-        SELECT date, pricePerLiter 
+        SELECT date, pricePerLiter, mileage
         FROM fuel_records 
         WHERE date >= :startDate 
-        ORDER BY date ASC
+        ORDER BY mileage ASC
     """)
     suspend fun getPriceRecords(startDate: Long): List<PriceRecordData>
 
@@ -231,10 +231,10 @@ interface FuelRecordDao {
      * 获取指定时间范围内有油耗的记录（用于百公里花费曲线）
      */
     @Query("""
-        SELECT date, fuelConsumption, pricePerLiter 
+        SELECT date, fuelConsumption, pricePerLiter, mileage
         FROM fuel_records 
         WHERE date >= :startDate AND isFull = 1 AND fuelConsumption > 0
-        ORDER BY date ASC
+        ORDER BY mileage ASC
     """)
     suspend fun getConsumptionRecords(startDate: Long): List<ConsumptionRecordData>
 }
@@ -266,7 +266,8 @@ data class MonthlyCostPer100kmData(
  */
 data class PriceRecordData(
     val date: Long,
-    val pricePerLiter: Double
+    val pricePerLiter: Double,
+    val mileage: Double
 )
 
 /**
@@ -275,5 +276,6 @@ data class PriceRecordData(
 data class ConsumptionRecordData(
     val date: Long,
     val fuelConsumption: Double,
-    val pricePerLiter: Double
+    val pricePerLiter: Double,
+    val mileage: Double
 )
