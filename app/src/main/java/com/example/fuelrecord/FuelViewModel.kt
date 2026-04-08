@@ -16,7 +16,7 @@ import java.util.Date
 class FuelViewModel(application: Application) : AndroidViewModel(application) {
 
     private val databaseHelper: DatabaseHelper
-    private val _records = MutableLiveData<List<FuelRecord>>()
+    private val _records = MutableLiveData<List<FuelRecordWithDistance>>()
     private val _statistics = MutableLiveData<FuelStatistics>()
     private val _isLoading = MutableLiveData<Boolean>()
     private val _errorMessage = MutableLiveData<String?>()
@@ -24,16 +24,18 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
     // 看板数据
     private val _dashboardStats = MutableLiveData<DashboardStats>()
     private val _consumptionChartData = MutableLiveData<List<ChartPoint>>()
+    private val _fuelPriceChartData = MutableLiveData<List<ChartPoint>>()
     private val _costPer100kmChartData = MutableLiveData<List<ChartPoint>>()
     private val _monthlyFuelChartData = MutableLiveData<List<ChartPoint>>()
     private val _monthlyCostChartData = MutableLiveData<List<ChartPoint>>()
 
-    val records: LiveData<List<FuelRecord>> get() = _records
+    val records: LiveData<List<FuelRecordWithDistance>> get() = _records
     val statistics: LiveData<FuelStatistics> get() = _statistics
     val isLoading: LiveData<Boolean> get() = _isLoading
     val errorMessage: LiveData<String?> get() = _errorMessage
     val dashboardStats: LiveData<DashboardStats> get() = _dashboardStats
     val consumptionChartData: LiveData<List<ChartPoint>> get() = _consumptionChartData
+    val fuelPriceChartData: LiveData<List<ChartPoint>> get() = _fuelPriceChartData
     val costPer100kmChartData: LiveData<List<ChartPoint>> get() = _costPer100kmChartData
     val monthlyFuelChartData: LiveData<List<ChartPoint>> get() = _monthlyFuelChartData
     val monthlyCostChartData: LiveData<List<ChartPoint>> get() = _monthlyCostChartData
@@ -62,7 +64,7 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                _records.value = databaseHelper.getAllRecords()
+                _records.value = databaseHelper.getAllRecordsWithDistance()
                 _errorMessage.value = null
             } catch (e: Exception) {
                 _errorMessage.value = "加载记录失败: ${e.message}"
@@ -181,6 +183,7 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
                 val months = dashboardMonths
                 _dashboardStats.value = databaseHelper.getDashboardStats(months)
                 _consumptionChartData.value = databaseHelper.getConsumptionData(months)
+                _fuelPriceChartData.value = databaseHelper.getFuelPriceData(months)
                 _costPer100kmChartData.value = databaseHelper.getCostPer100kmData(months)
                 _monthlyFuelChartData.value = databaseHelper.getMonthlyFuelData(months)
                 _monthlyCostChartData.value = databaseHelper.getMonthlyCostData(months)
@@ -194,7 +197,8 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                _records.value = databaseHelper.searchRecords(keyword)
+                val found = databaseHelper.searchRecords(keyword)
+                _records.value = found.map { FuelRecordWithDistance(it) }
                 _errorMessage.value = null
             } catch (e: Exception) {
                 _errorMessage.value = "搜索记录失败: ${e.message}"

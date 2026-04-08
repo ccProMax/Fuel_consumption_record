@@ -90,8 +90,12 @@ class DashboardFragment : Fragment() {
             binding.chartConsumption.setData(points, Color.parseColor("#FF9800"))
         }
 
+        viewModel.fuelPriceChartData.observe(viewLifecycleOwner) { points ->
+            binding.chartFuelPrice.setData(points, Color.parseColor("#2196F3"))
+        }
+
         viewModel.costPer100kmChartData.observe(viewLifecycleOwner) { points ->
-            binding.chartCostPer100km.setData(points, Color.parseColor("#2196F3"))
+            binding.chartCostPer100km.setData(points, Color.parseColor("#4CAF50"))
         }
     }
 

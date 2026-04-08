@@ -48,9 +48,9 @@ class RecordsFragment : Fragment() {
     }
 
     private fun observeData() {
-        viewModel.records.observe(viewLifecycleOwner) { records ->
-            adapter.updateRecords(records)
-            if (records.isEmpty()) {
+        viewModel.records.observe(viewLifecycleOwner) { recordsWithDistance ->
+            adapter.updateRecords(recordsWithDistance)
+            if (recordsWithDistance.isEmpty()) {
                 binding.tvEmptyState.visibility = View.VISIBLE
                 binding.rvRecords.visibility = View.GONE
             } else {
@@ -104,10 +104,11 @@ class RecordsFragment : Fragment() {
         }
     }
 
-    private fun buildCsvContent(records: List<FuelRecord>): String {
+    private fun buildCsvContent(recordsWithDistance: List<FuelRecordWithDistance>): String {
         val sb = StringBuilder()
         sb.append("日期,里程(km),加油量(L),单价(元/L),总价(元),油耗(L/100km),汽油标号,是否加满,备注\n")
-        records.reversed().forEach { record ->
+        recordsWithDistance.reversed().forEach { item ->
+            val record = item.record
             sb.append("${record.getFormattedDate()},")
             sb.append("${record.mileage},")
             sb.append("${record.fuelAmount},")

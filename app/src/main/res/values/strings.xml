@@ -31,6 +31,7 @@
     <string name="total_cost_label">预计总价：</string>
     <string name="fuel_type_label">汽油标号</string>
     <string name="is_full_label">是否加满</string>
+    <string name="distance_added_label">行驶里程：</string>
 
     <!-- 按钮 -->
     <string name="btn_save">保存</string>
@@ -65,6 +66,7 @@
     <string name="dashboard_total_cost">总金额</string>
     <string name="dashboard_avg_price">平均油价</string>
     <string name="chart_consumption_trend">油耗变化趋势</string>
+    <string name="chart_fuel_price_trend">油价变化趋势</string>
     <string name="chart_cost_per_100km">每百公里花费</string>
     <string name="chart_monthly_fuel">月度加油量</string>
     <string name="chart_monthly_cost">月度花费</string>

@@ -199,10 +199,38 @@ class DatabaseHelper(private val database: AppDatabase) {
     }
 
     /**
-     * 获取所有记录
+     * 获取所有记录（按日期降序）
      */
     suspend fun getAllRecords(): List<FuelRecord> {
         return dao.getAllRecordsSync()
+    }
+
+    /**
+     * 获取所有记录并附带行驶里程信息（按日期降序）
+     */
+    suspend fun getAllRecordsWithDistance(): List<FuelRecordWithDistance> {
+        val allRecordsAsc = dao.getAllRecordsAsc().sortedBy { it.date }
+        val recordsMap = allRecordsAsc.associateBy { it.id }
+        var previousRecord: FuelRecord? = null
+        val result = mutableListOf<Pair<FuelRecord, FuelRecordWithDistance>>()
+
+        for (rec in allRecordsAsc) {
+            val distanceAdded = if (previousRecord != null && rec.mileage >= previousRecord.mileage) {
+                rec.mileage - previousRecord.mileage
+            } else {
+                0.0
+            }
+            val withDist = FuelRecordWithDistance(
+                record = rec,
+                distanceAdded = distanceAdded,
+                hasPreviousRecord = previousRecord != null
+            )
+            result.add(rec to withDist)
+            previousRecord = rec
+        }
+
+        // 返回按日期降序（列表页从新到旧）
+        return result.sortedByDescending { it.first.date }.map { it.second }
     }
 
     /**
@@ -322,6 +350,19 @@ class DatabaseHelper(private val database: AppDatabase) {
         return records.map {
             val dateStr = sdf.format(java.util.Date(it.date))
             ChartPoint(dateStr, it.fuelConsumption)
+        }
+    }
+
+    /**
+     * 获取油价趋势数据点（按每次加油记录）
+     */
+    suspend fun getFuelPriceData(months: Int): List<ChartPoint> {
+        val startDate = getStartDateForMonths(months)
+        val records = dao.getPriceRecords(startDate)
+        val sdf = java.text.SimpleDateFormat("MM-dd", java.util.Locale.getDefault())
+        return records.map {
+            val dateStr = sdf.format(java.util.Date(it.date))
+            ChartPoint(dateStr, it.pricePerLiter)
         }
     }
 

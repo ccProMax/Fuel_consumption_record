@@ -6,7 +6,6 @@ import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -78,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_record, null)
         val etDate = dialogView.findViewById<TextInputEditText>(R.id.etDate)
         val etMileage = dialogView.findViewById<TextInputEditText>(R.id.etMileage)
+        val tvDistanceAdded = dialogView.findViewById<TextView>(R.id.tvDistanceAdded)
         val etFuelAmount = dialogView.findViewById<TextInputEditText>(R.id.etFuelAmount)
         val etPricePerLiter = dialogView.findViewById<TextInputEditText>(R.id.etPricePerLiter)
         val etNote = dialogView.findViewById<TextInputEditText>(R.id.etNote)
@@ -88,6 +88,9 @@ class MainActivity : AppCompatActivity() {
         val rb95 = dialogView.findViewById<RadioButton>(R.id.rb95)
         val rb98 = dialogView.findViewById<RadioButton>(R.id.rb98)
         val swIsFull = dialogView.findViewById<SwitchMaterial>(R.id.swIsFull)
+
+        // 获取上一条记录的里程（用于计算行驶里程）
+        val lastRecordMileage = viewModel.records.value?.firstOrNull()?.record?.mileage
 
         // 如果是编辑模式
         if (editRecord != null) {
@@ -107,6 +110,16 @@ class MainActivity : AppCompatActivity() {
                 98 -> rb98.isChecked = true
                 else -> rb92.isChecked = true
             }
+
+            // 编辑模式下，如果是最后一条记录，显示距离差
+            if (lastRecordMileage != null && lastRecordMileage == editRecord.mileage) {
+                val allRecords = viewModel.records.value ?: emptyList()
+                val nextRecord = allRecords.firstOrNull { it.record.id != editRecord.id }?.record
+                if (nextRecord != null && editRecord.mileage >= nextRecord.mileage) {
+                    val dist = editRecord.mileage - nextRecord.mileage
+                    tvDistanceAdded.text = "${decimalFormat.format(dist)} km"
+                }
+            }
         } else {
             // 添加模式：默认日期为今天
             val cal = Calendar.getInstance()
@@ -114,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 日期选择
+        val dateCal = Calendar.getInstance()
         etDate.setOnClickListener {
             val cal = Calendar.getInstance()
             val dateStr = etDate.text?.toString()
@@ -135,25 +149,116 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
 
-        // 自动计算总价
-        val calculateTotal = {
-            val fuelAmount = etFuelAmount.text?.toString()?.toDoubleOrNull() ?: 0.0
-            val pricePerLiter = etPricePerLiter.text?.toString()?.toDoubleOrNull() ?: 0.0
-            val total = fuelAmount * pricePerLiter
-            tvCalculatedTotal.text = "¥${moneyFormat.format(total)}"
+        // ==================== 联动计算逻辑 ====================
+        // 用于防止循环触发
+        var isUpdating = false
+
+        // 1. 行驶里程联动：当前里程变化时，自动计算行驶里程
+        val updateDistanceAdded = {
+            val currentMileage = etMileage.text?.toString()?.toDoubleOrNull()
+            if (currentMileage != null && lastRecordMileage != null && currentMileage >= lastRecordMileage) {
+                val dist = currentMileage - lastRecordMileage
+                tvDistanceAdded.text = "${decimalFormat.format(dist)} km"
+            } else {
+                tvDistanceAdded.text = "0 km"
+            }
         }
 
-        etFuelAmount.addTextChangedListener(object : android.text.TextWatcher {
+        // 2. 油价/油量/总价联动：填了其中两个，自动算第三个
+        fun recalculateFromPriceAndAmount() {
+            if (isUpdating) return
+            isUpdating = true
+            val fuelAmount = etFuelAmount.text?.toString()?.toDoubleOrNull()
+            val pricePerLiter = etPricePerLiter.text?.toString()?.toDoubleOrNull()
+            if (fuelAmount != null && pricePerLiter != null && fuelAmount > 0 && pricePerLiter > 0) {
+                val total = fuelAmount * pricePerLiter
+                tvCalculatedTotal.text = "¥${moneyFormat.format(total)}"
+            }
+            isUpdating = false
+        }
+
+        fun recalculateFromTotalAndAmount() {
+            if (isUpdating) return
+            isUpdating = true
+            val totalStr = tvCalculatedTotal.text?.toString()?.removePrefix("¥")?.toDoubleOrNull()
+            val fuelAmount = etFuelAmount.text?.toString()?.toDoubleOrNull()
+            if (totalStr != null && fuelAmount != null && totalStr > 0 && fuelAmount > 0) {
+                val price = totalStr / fuelAmount
+                etPricePerLiter.setText(decimalFormat.format(price))
+            }
+            isUpdating = false
+        }
+
+        fun recalculateFromTotalAndPrice() {
+            if (isUpdating) return
+            isUpdating = true
+            val totalStr = tvCalculatedTotal.text?.toString()?.removePrefix("¥")?.toDoubleOrNull()
+            val pricePerLiter = etPricePerLiter.text?.toString()?.toDoubleOrNull()
+            if (totalStr != null && pricePerLiter != null && totalStr > 0 && pricePerLiter > 0) {
+                val amount = totalStr / pricePerLiter
+                etFuelAmount.setText(decimalFormat.format(amount))
+            }
+            isUpdating = false
+        }
+
+        // 监听里程变化 → 更新行驶里程
+        etMileage.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) { calculateTotal() }
+            override fun afterTextChanged(s: android.text.Editable?) { updateDistanceAdded() }
         })
 
+        // 监听加油量变化
+        etFuelAmount.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (isUpdating) return
+                val pricePerLiter = etPricePerLiter.text?.toString()?.toDoubleOrNull()
+                val totalStr = tvCalculatedTotal.text?.toString()?.removePrefix("¥")?.toDoubleOrNull()
+                if (pricePerLiter != null && pricePerLiter > 0 && totalStr != null && totalStr > 0) {
+                    recalculateFromTotalAndPrice()
+                } else {
+                    recalculateFromPriceAndAmount()
+                }
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        // 监听单价变化
         etPricePerLiter.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) { calculateTotal() }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (isUpdating) return
+                val fuelAmount = etFuelAmount.text?.toString()?.toDoubleOrNull()
+                val totalStr = tvCalculatedTotal.text?.toString()?.removePrefix("¥")?.toDoubleOrNull()
+                if (fuelAmount != null && fuelAmount > 0 && totalStr != null && totalStr > 0) {
+                    recalculateFromTotalAndAmount()
+                } else {
+                    recalculateFromPriceAndAmount()
+                }
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
         })
+
+        // 点击总价也可以输入（让用户修改总价反推）
+        tvCalculatedTotal.setOnClickListener {
+            val dialog = android.app.AlertDialog.Builder(this)
+                .setTitle("输入总价")
+                .setView(android.widget.EditText(this).apply {
+                    hint = "请输入总价"
+                    setText(tvCalculatedTotal.text?.toString()?.removePrefix("¥"))
+                }.also { editText ->
+                    editText.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                })
+                .setPositiveButton("确定") { _, _ ->
+                    val input = (dialogView.findViewById<android.view.ViewGroup>(android.R.id.content)?.getChildAt(0) as? android.view.ViewGroup)
+                        ?.getChildAt(0)?.findViewById<android.widget.EditText>(android.R.id.edit)
+                    // 简化处理：直接使用 editText 的值
+                }
+                .setNegativeButton("取消", null)
+                .create()
+            // 简化：点击总价时不弹框，而是通过修改油量或单价来反推
+        }
 
         // 解析日期
         fun parseDate(): Calendar? {

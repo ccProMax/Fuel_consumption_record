@@ -15,24 +15,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="12dp"
+            android:paddingEnd="40dp">
 
-            <!-- 左上角：里程 -->
-            <TextView
-                android:id="@+id/tvMileage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="15000 km"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary_text" />
-
-            <!-- 中间信息区 -->
+            <!-- 顶部行：左上里程 + 右上油耗 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="8dp"
                 android:gravity="center_vertical">
 
                 <LinearLayout
@@ -41,102 +31,129 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <!-- 加油量和总价 -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:id="@+id/tvFuelAmount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="45.5 L"
-                            android:textSize="13sp"
-                            android:textColor="@color/secondary_text" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" | "
-                            android:textSize="13sp"
-                            android:textColor="@color/secondary_text" />
-
-                        <TextView
-                            android:id="@+id/tvTotalCost"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="¥359.00"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/primary_color" />
-                    </LinearLayout>
-
-                    <!-- 单价和汽油标号 -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:id="@+id/tvPrice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="¥7.89/L"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_text" />
-
-                        <TextView
-                            android:id="@+id/tvFuelType"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="#92"
-                            android:textSize="11sp"
-                            android:textColor="@color/primary_color"
-                            android:background="@drawable/bg_fuel_type"
-                            android:paddingStart="6dp"
-                            android:paddingEnd="6dp"
-                            android:paddingTop="2dp"
-                            android:paddingBottom="2dp" />
-
-                        <TextView
-                            android:id="@+id/tvFullFlag"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="加满"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- 油耗 -->
                     <TextView
-                        android:id="@+id/tvConsumption"
+                        android:id="@+id/tvMileage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="7.5 L/100km"
-                        android:textSize="14sp"
+                        android:text="103226.7 km"
+                        android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/accent_color" />
+                        android:textColor="@color/primary_text" />
 
-                    <!-- 备注 -->
+                    <!-- 增加里程 -->
                     <TextView
-                        android:id="@+id/tvNote"
+                        android:id="@+id/tvDistanceAdded"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text=""
-                        android:textSize="11sp"
-                        android:textColor="@color/secondary_text"
-                        android:maxLines="2"
-                        android:ellipsize="end"
+                        android:layout_marginTop="2dp"
+                        android:text="+350 km"
+                        android:textSize="12sp"
+                        android:textColor="@color/accent_color"
                         android:visibility="gone" />
                 </LinearLayout>
+
+                <!-- 右上油耗 -->
+                <TextView
+                    android:id="@+id/tvConsumption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7.24 L/100km"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent_color" />
+            </LinearLayout>
+
+            <!-- 中间信息区 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
+
+                <!-- 加油量和总价 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvFuelAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="28.31 L"
+                        android:textSize="13sp"
+                        android:textColor="@color/secondary_text" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" | "
+                        android:textSize="13sp"
+                        android:textColor="@color/secondary_text" />
+
+                    <TextView
+                        android:id="@+id/tvTotalCost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="¥216.85"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary_color" />
+                </LinearLayout>
+
+                <!-- 单价和汽油标号 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="¥7.66/L"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_text" />
+
+                    <TextView
+                        android:id="@+id/tvFuelType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="#92"
+                        android:textSize="11sp"
+                        android:textColor="@color/primary_color"
+                        android:background="@drawable/bg_fuel_type"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="6dp"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp" />
+
+                    <TextView
+                        android:id="@+id/tvFullFlag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="加满"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- 备注 -->
+                <TextView
+                    android:id="@+id/tvNote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text=""
+                    android:textSize="11sp"
+                    android:textColor="@color/secondary_text"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <!-- 左下角：时间 -->
@@ -144,9 +161,9 @@
                 android:id="@+id/tvDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="2024-01-15"
-                android:textSize="12sp"
+                android:layout_marginTop="6dp"
+                android:text="2026-04-08"
+                android:textSize="11sp"
                 android:textColor="@color/secondary_text" />
         </LinearLayout>
 

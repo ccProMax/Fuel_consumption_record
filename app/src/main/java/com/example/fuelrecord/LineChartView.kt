@@ -17,7 +17,7 @@ class LineChartView @JvmOverloads constructor(
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 3f
+        strokeWidth = 4f
         color = Color.parseColor("#FF9800")
     }
 
@@ -27,13 +27,13 @@ class LineChartView @JvmOverloads constructor(
     }
 
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 24f
+        textSize = 32f
         color = Color.parseColor("#757575")
         textAlign = Paint.Align.CENTER
     }
 
     private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 22f
+        textSize = 30f
         color = Color.parseColor("#212121")
         textAlign = Paint.Align.CENTER
     }

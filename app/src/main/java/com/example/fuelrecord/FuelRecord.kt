@@ -72,6 +72,15 @@ data class FuelRecord(
 }
 
 /**
+ * 带有行驶里程的扩展记录（用于列表显示）
+ */
+data class FuelRecordWithDistance(
+    val record: FuelRecord,
+    val distanceAdded: Double = 0.0,
+    val hasPreviousRecord: Boolean = false
+)
+
+/**
  * 油耗统计信息
  */
 data class FuelStatistics(

@@ -13,7 +13,7 @@ import java.text.DecimalFormat
  * 油耗记录列表适配器
  */
 class FuelRecordAdapter(
-    private var records: List<FuelRecord>,
+    private var recordsWithDistance: List<FuelRecordWithDistance>,
     private val onDeleteClick: (FuelRecord) -> Unit,
     private val onEditClick: (FuelRecord) -> Unit
 ) : RecyclerView.Adapter<FuelRecordAdapter.RecordViewHolder>() {
@@ -25,6 +25,7 @@ class FuelRecordAdapter(
         val tvDate: TextView = itemView.findViewById(R.id.tvDate)
         val tvConsumption: TextView = itemView.findViewById(R.id.tvConsumption)
         val tvMileage: TextView = itemView.findViewById(R.id.tvMileage)
+        val tvDistanceAdded: TextView = itemView.findViewById(R.id.tvDistanceAdded)
         val tvFuelAmount: TextView = itemView.findViewById(R.id.tvFuelAmount)
         val tvPrice: TextView = itemView.findViewById(R.id.tvPrice)
         val tvTotalCost: TextView = itemView.findViewById(R.id.tvTotalCost)
@@ -41,20 +42,29 @@ class FuelRecordAdapter(
     }
 
     override fun onBindViewHolder(holder: RecordViewHolder, position: Int) {
-        val record = records[position]
+        val item = recordsWithDistance[position]
+        val record = item.record
 
-        // 左上角：里程（大字体）
+        // 左上角：里程
         holder.tvMileage.text = "${decimalFormat.format(record.mileage)} km"
 
-        // 左下角：时间
-        holder.tvDate.text = record.getFormattedDate()
+        // 增加里程（如果有前一条记录）
+        if (item.hasPreviousRecord && item.distanceAdded > 0) {
+            holder.tvDistanceAdded.text = "+${decimalFormat.format(item.distanceAdded)} km"
+            holder.tvDistanceAdded.visibility = View.VISIBLE
+        } else {
+            holder.tvDistanceAdded.visibility = View.GONE
+        }
 
-        // 油耗显示
+        // 右上角：油耗
         if (record.fuelConsumption > 0) {
             holder.tvConsumption.text = "${decimalFormat.format(record.fuelConsumption)} L/100km"
         } else {
-            holder.tvConsumption.text = if (record.isFull) "等待下次加满" else "未加满"
+            holder.tvConsumption.text = if (record.isFull) "无法计算" else "未加满"
         }
+
+        // 左下角：时间
+        holder.tvDate.text = record.getFormattedDate()
 
         holder.tvFuelAmount.text = "${decimalFormat.format(record.fuelAmount)} L"
         holder.tvPrice.text = "¥${moneyFormat.format(record.pricePerLiter)}/L"
@@ -87,7 +97,7 @@ class FuelRecordAdapter(
     private fun showPopupMenu(view: View, record: FuelRecord) {
         val popup = PopupMenu(view.context, view)
         popup.menuInflater.inflate(R.menu.record_actions_menu, popup.menu)
-        
+
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_edit -> {
@@ -104,10 +114,10 @@ class FuelRecordAdapter(
         popup.show()
     }
 
-    override fun getItemCount(): Int = records.size
+    override fun getItemCount(): Int = recordsWithDistance.size
 
-    fun updateRecords(newRecords: List<FuelRecord>) {
-        records = newRecords
+    fun updateRecords(newRecordsWithDistance: List<FuelRecordWithDistance>) {
+        recordsWithDistance = newRecordsWithDistance
         notifyDataSetChanged()
     }
 }
