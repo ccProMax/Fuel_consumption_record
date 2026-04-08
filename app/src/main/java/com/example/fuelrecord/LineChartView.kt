@@ -17,7 +17,7 @@ class LineChartView @JvmOverloads constructor(
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 4f
+        strokeWidth = 5f
         color = Color.parseColor("#FF9800")
     }
 
@@ -27,13 +27,13 @@ class LineChartView @JvmOverloads constructor(
     }
 
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 32f
+        textSize = 40f
         color = Color.parseColor("#757575")
         textAlign = Paint.Align.CENTER
     }
 
     private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 30f
+        textSize = 38f
         color = Color.parseColor("#212121")
         textAlign = Paint.Align.CENTER
     }
@@ -59,7 +59,7 @@ class LineChartView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (dataPoints.isEmpty()) return
 
-        val padding = 50f
+        val padding = 65f
         val chartWidth = width - padding * 2
         val chartHeight = height - padding * 2
 
@@ -100,10 +100,10 @@ class LineChartView @JvmOverloads constructor(
             val y = padding + chartHeight * (1 - normalizedValue.toFloat())
 
             // 数据点
-            canvas.drawCircle(x, y, 6f, pointPaint)
+            canvas.drawCircle(x, y, 10f, pointPaint)
 
             // 数值标签
-            canvas.drawText(decimalFormat.format(point.value), x, y - 15f, valuePaint)
+            canvas.drawText(decimalFormat.format(point.value), x, y - 20f, valuePaint)
 
             // X轴标签
             canvas.drawText(point.label, x, height - 10f, labelPaint)

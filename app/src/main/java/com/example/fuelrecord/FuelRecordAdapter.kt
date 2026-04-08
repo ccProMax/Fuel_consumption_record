@@ -1,5 +1,10 @@
 package com.example.fuelrecord
 
+import android.graphics.Color
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,10 +61,37 @@ class FuelRecordAdapter(
             holder.tvDistanceAdded.visibility = View.GONE
         }
 
-        // 右上角：油耗
+        // 右上角：油耗 - 使用 SpannableString 实现差异化样式
         if (record.fuelConsumption > 0) {
-            holder.tvConsumption.text = "${decimalFormat.format(record.fuelConsumption)} L/100km"
+            val valueText = "${decimalFormat.format(record.fuelConsumption)}L"
+            val unitText = "/100km"
+            val fullText = "$valueText $unitText"
+            val spannable = SpannableString(fullText)
+            val accentColor = holder.itemView.context.getColor(R.color.accent_color)
+            // 数值部分：大字体 + 主题色
+            spannable.setSpan(
+                ForegroundColorSpan(accentColor),
+                0, valueText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannable.setSpan(
+                AbsoluteSizeSpan(22, true),
+                0, valueText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            // 单位部分：中等字体 + 黑色
+            spannable.setSpan(
+                ForegroundColorSpan(Color.parseColor("#424242")),
+                valueText.length + 1, fullText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannable.setSpan(
+                AbsoluteSizeSpan(14, true),
+                valueText.length + 1, fullText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            holder.tvConsumption.text = spannable
         } else {
+            // 无法计算 / 未加满 - 浅色提示
+            holder.tvConsumption.setTextColor(
+                holder.itemView.context.getColor(R.color.hint_text_color)
+            )
             holder.tvConsumption.text = if (record.isFull) "无法计算" else "未加满"
         }
 

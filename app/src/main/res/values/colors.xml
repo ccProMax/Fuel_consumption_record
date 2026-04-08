@@ -20,4 +20,5 @@
 
     <!-- 其他 -->
     <color name="divider_color">#E0E0E0</color>
+    <color name="hint_text_color">#BDBDBD</color>
 </resources>
