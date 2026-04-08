@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.DecimalFormat
@@ -30,8 +31,7 @@ class FuelRecordAdapter(
         val tvNote: TextView = itemView.findViewById(R.id.tvNote)
         val tvFuelType: TextView = itemView.findViewById(R.id.tvFuelType)
         val tvFullFlag: TextView = itemView.findViewById(R.id.tvFullFlag)
-        val btnDelete: ImageButton = itemView.findViewById(R.id.btnDelete)
-        val btnEdit: ImageButton = itemView.findViewById(R.id.btnEdit)
+        val btnMore: ImageButton = itemView.findViewById(R.id.btnMore)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder {
@@ -43,6 +43,10 @@ class FuelRecordAdapter(
     override fun onBindViewHolder(holder: RecordViewHolder, position: Int) {
         val record = records[position]
 
+        // 左上角：里程（大字体）
+        holder.tvMileage.text = "${decimalFormat.format(record.mileage)} km"
+
+        // 左下角：时间
         holder.tvDate.text = record.getFormattedDate()
 
         // 油耗显示
@@ -52,8 +56,7 @@ class FuelRecordAdapter(
             holder.tvConsumption.text = if (record.isFull) "等待下次加满" else "未加满"
         }
 
-        holder.tvMileage.text = "里程: ${decimalFormat.format(record.mileage)} km"
-        holder.tvFuelAmount.text = "加油: ${decimalFormat.format(record.fuelAmount)} L"
+        holder.tvFuelAmount.text = "${decimalFormat.format(record.fuelAmount)} L"
         holder.tvPrice.text = "¥${moneyFormat.format(record.pricePerLiter)}/L"
         holder.tvTotalCost.text = "¥${moneyFormat.format(record.totalCost)}"
         holder.tvFuelType.text = record.getFuelTypeLabel()
@@ -75,8 +78,30 @@ class FuelRecordAdapter(
             holder.tvNote.visibility = View.GONE
         }
 
-        holder.btnDelete.setOnClickListener { onDeleteClick(record) }
-        holder.btnEdit.setOnClickListener { onEditClick(record) }
+        // 三点菜单按钮
+        holder.btnMore.setOnClickListener {
+            showPopupMenu(it, record)
+        }
+    }
+
+    private fun showPopupMenu(view: View, record: FuelRecord) {
+        val popup = PopupMenu(view.context, view)
+        popup.menuInflater.inflate(R.menu.record_actions_menu, popup.menu)
+        
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_edit -> {
+                    onEditClick(record)
+                    true
+                }
+                R.id.action_delete -> {
+                    onDeleteClick(record)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     override fun getItemCount(): Int = records.size

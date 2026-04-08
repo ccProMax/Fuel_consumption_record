@@ -213,6 +213,30 @@ interface FuelRecordDao {
      */
     @Query("SELECT AVG(pricePerLiter) FROM fuel_records WHERE date >= :startDate")
     suspend fun getAvgPriceInRange(startDate: Long): Double?
+
+    // ==================== 按每次加油记录的查询（用于曲线图）====================
+
+    /**
+     * 获取指定时间范围内的加油记录（用于油价曲线）
+     */
+    @Query("""
+        SELECT date, pricePerLiter 
+        FROM fuel_records 
+        WHERE date >= :startDate 
+        ORDER BY date ASC
+    """)
+    suspend fun getPriceRecords(startDate: Long): List<PriceRecordData>
+
+    /**
+     * 获取指定时间范围内有油耗的记录（用于百公里花费曲线）
+     */
+    @Query("""
+        SELECT date, fuelConsumption, pricePerLiter 
+        FROM fuel_records 
+        WHERE date >= :startDate AND isFull = 1 AND fuelConsumption > 0
+        ORDER BY date ASC
+    """)
+    suspend fun getConsumptionRecords(startDate: Long): List<ConsumptionRecordData>
 }
 
 // ==================== 月度统计数据类 ====================
@@ -235,4 +259,21 @@ data class MonthlyConsumptionData(
 data class MonthlyCostPer100kmData(
     val month: String,
     val avgCostPer100km: Double
+)
+
+/**
+ * 单次加油价格记录（用于曲线图）
+ */
+data class PriceRecordData(
+    val date: Long,
+    val pricePerLiter: Double
+)
+
+/**
+ * 单次油耗记录（用于曲线图）
+ */
+data class ConsumptionRecordData(
+    val date: Long,
+    val fuelConsumption: Double,
+    val pricePerLiter: Double
 )

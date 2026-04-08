@@ -271,18 +271,25 @@ class DatabaseHelper(private val database: AppDatabase) {
         val startDate = getStartDateForMonths(months)
 
         val avgConsumption = dao.getAvgConsumptionInRange(startDate) ?: 0.0
+        // 每百公里平均花费（元/100km）
         val avgCostPer100km = dao.getAvgCostPer100kmInRange(startDate) ?: 0.0
+        // 转换为每公里花费（元/km）
+        val avgPricePerKm = avgCostPer100km / 100.0
         val totalDistance = dao.getTotalDistanceInRange(startDate)
         val totalFuel = dao.getTotalFuelAmountInRange(startDate)
         val totalCost = dao.getTotalCostInRange(startDate)
         val avgPrice = dao.getAvgPriceInRange(startDate) ?: 0.0
 
-        val periodLabel = if (months == 1) "近1月" else "近${months}月"
+        val periodLabel = when {
+            months == -1 -> "今年来"
+            months == 1 -> "近1月"
+            else -> "近${months}月"
+        }
 
         return DashboardStats(
             periodLabel = periodLabel,
             avgConsumption = avgConsumption,
-            avgPricePer100km = avgCostPer100km,
+            avgPricePer100km = avgPricePerKm,  // 这里是每公里的价格（元/km）
             totalDistance = totalDistance,
             totalFuelAmount = totalFuel,
             totalCost = totalCost,
@@ -291,22 +298,30 @@ class DatabaseHelper(private val database: AppDatabase) {
     }
 
     /**
-     * 获取每百公里花费数据点
+     * 获取每百公里花费数据点（按每次加油记录）
      */
     suspend fun getCostPer100kmData(months: Int): List<ChartPoint> {
         val startDate = getStartDateForMonths(months)
-        return dao.getMonthlyCostPer100km(startDate).map {
-            ChartPoint(it.month, it.avgCostPer100km)
+        val records = dao.getConsumptionRecords(startDate)
+        val sdf = java.text.SimpleDateFormat("MM-dd", java.util.Locale.getDefault())
+        return records.map {
+            val dateStr = sdf.format(java.util.Date(it.date))
+            // 计算每百公里花费 = 油耗 * 单价
+            val costPer100km = it.fuelConsumption * it.pricePerLiter
+            ChartPoint(dateStr, costPer100km)
         }
     }
 
     /**
-     * 获取油耗趋势数据点
+     * 获取油耗趋势数据点（按每次加油记录）
      */
     suspend fun getConsumptionData(months: Int): List<ChartPoint> {
         val startDate = getStartDateForMonths(months)
-        return dao.getMonthlyAvgConsumption(startDate).map {
-            ChartPoint(it.month, it.avgConsumption)
+        val records = dao.getConsumptionRecords(startDate)
+        val sdf = java.text.SimpleDateFormat("MM-dd", java.util.Locale.getDefault())
+        return records.map {
+            val dateStr = sdf.format(java.util.Date(it.date))
+            ChartPoint(dateStr, it.fuelConsumption)
         }
     }
 
@@ -332,7 +347,17 @@ class DatabaseHelper(private val database: AppDatabase) {
 
     private fun getStartDateForMonths(months: Int): Long {
         val cal = java.util.Calendar.getInstance()
-        cal.add(java.util.Calendar.MONTH, -months)
+        if (months == -1) {
+            // 今年来：设置为今年1月1日 00:00:00
+            cal.set(java.util.Calendar.MONTH, java.util.Calendar.JANUARY)
+            cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
+            cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            cal.set(java.util.Calendar.MINUTE, 0)
+            cal.set(java.util.Calendar.SECOND, 0)
+            cal.set(java.util.Calendar.MILLISECOND, 0)
+        } else {
+            cal.add(java.util.Calendar.MONTH, -months)
+        }
         return cal.timeInMillis
     }
 

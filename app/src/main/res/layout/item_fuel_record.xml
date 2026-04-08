@@ -7,153 +7,159 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:layout_height="wrap_content">
 
-        <!-- 顶部：日期、油耗、汽油标号、是否加满 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:padding="12dp">
 
-            <TextView
-                android:id="@+id/tvDate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="2024-01-15"
-                android:textSize="14sp"
-                android:textColor="@color/primary_text"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvFuelType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="#92"
-                android:textSize="12sp"
-                android:textColor="@color/primary_color"
-                android:background="@drawable/bg_fuel_type"
-                android:paddingStart="6dp"
-                android:paddingEnd="6dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp" />
-
-            <TextView
-                android:id="@+id/tvFullFlag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="加满"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvConsumption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="7.5 L/100km"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/accent_color" />
-        </LinearLayout>
-
-        <!-- 中部：里程信息 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
-
+            <!-- 左上角：里程 -->
             <TextView
                 android:id="@+id/tvMileage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="里程: 15000 km"
-                android:textSize="13sp"
-                android:textColor="@color/secondary_text" />
-
-            <TextView
-                android:id="@+id/tvFuelAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="加油: 45.5 L"
-                android:textSize="13sp"
-                android:textColor="@color/secondary_text" />
-        </LinearLayout>
+                android:text="15000 km"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_text" />
 
-        <!-- 底部：价格和备注 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="0dp"
+            <!-- 中间信息区 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="¥7.89/L"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- 加油量和总价 -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvFuelAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="45.5 L"
+                            android:textSize="13sp"
+                            android:textColor="@color/secondary_text" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" | "
+                            android:textSize="13sp"
+                            android:textColor="@color/secondary_text" />
+
+                        <TextView
+                            android:id="@+id/tvTotalCost"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="¥359.00"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary_color" />
+                    </LinearLayout>
+
+                    <!-- 单价和汽油标号 -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvPrice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="¥7.89/L"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary_text" />
+
+                        <TextView
+                            android:id="@+id/tvFuelType"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="#92"
+                            android:textSize="11sp"
+                            android:textColor="@color/primary_color"
+                            android:background="@drawable/bg_fuel_type"
+                            android:paddingStart="6dp"
+                            android:paddingEnd="6dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp" />
+
+                        <TextView
+                            android:id="@+id/tvFullFlag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="加满"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- 油耗 -->
+                    <TextView
+                        android:id="@+id/tvConsumption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="7.5 L/100km"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_color" />
+
+                    <!-- 备注 -->
+                    <TextView
+                        android:id="@+id/tvNote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text=""
+                        android:textSize="11sp"
+                        android:textColor="@color/secondary_text"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 左下角：时间 -->
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="2024-01-15"
                 android:textSize="12sp"
                 android:textColor="@color/secondary_text" />
-
-            <TextView
-                android:id="@+id/tvTotalCost"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="¥359.00"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary_color" />
         </LinearLayout>
 
-        <!-- 备注 -->
-        <TextView
-            android:id="@+id/tvNote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text=""
-            android:textSize="12sp"
-            android:textColor="@color/secondary_text"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:visibility="gone" />
-
-        <!-- 操作按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:gravity="end"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/btnEdit"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@android:drawable/ic_menu_edit"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/edit_record"
-                app:tint="@color/primary_color" />
-
-            <ImageButton
-                android:id="@+id/btnDelete"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@android:drawable/ic_menu_delete"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/delete_record"
-                app:tint="@color/error_color" />
-        </LinearLayout>
-
-    </LinearLayout>
+        <!-- 右下角三点菜单按钮 -->
+        <ImageButton
+            android:id="@+id/btnMore"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="4dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="更多操作"
+            app:tint="@color/secondary_text" />
+    </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

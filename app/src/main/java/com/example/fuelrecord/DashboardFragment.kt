@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import com.example.fuelrecord.databinding.FragmentDashboardBinding
 import java.text.DecimalFormat
+import java.util.Calendar
 
 class DashboardFragment : Fragment() {
 
@@ -19,6 +22,18 @@ class DashboardFragment : Fragment() {
 
     private val decimalFormat = DecimalFormat("#.##")
     private val moneyFormat = DecimalFormat("#.00")
+
+    // 统计周期选项
+    private val periodOptions = listOf(
+        PeriodOption("近3月", 3),
+        PeriodOption("近半年", 6),
+        PeriodOption("今年来", -1),  // -1表示今年
+        PeriodOption("近1年", 12),
+        PeriodOption("近2年", 24),
+        PeriodOption("近3年", 36)
+    )
+
+    data class PeriodOption(val label: String, val months: Int)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,20 +51,28 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupPeriodSelector() {
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            periodOptions.map { it.label }
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerPeriod.adapter = adapter
+
+        // 设置当前选中的值
         val currentMonths = viewModel.dashboardMonths
-        when (currentMonths) {
-            3 -> binding.rb3Month.isChecked = true
-            12 -> binding.rb12Month.isChecked = true
-            else -> binding.rb6Month.isChecked = true
+        val currentIndex = periodOptions.indexOfFirst { it.months == currentMonths }
+        if (currentIndex >= 0) {
+            binding.spinnerPeriod.setSelection(currentIndex)
         }
 
-        binding.rgPeriod.setOnCheckedChangeListener { _, checkedId ->
-            val months = when (checkedId) {
-                R.id.rb3Month -> 3
-                R.id.rb12Month -> 12
-                else -> 6
+        binding.spinnerPeriod.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedOption = periodOptions[position]
+                viewModel.dashboardMonths = selectedOption.months
             }
-            viewModel.dashboardMonths = months
+
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
     }
 
