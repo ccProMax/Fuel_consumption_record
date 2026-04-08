@@ -195,7 +195,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (editRecord != null) {
-                    // 编辑模式
+                    // 编辑模式：清空油耗，由DatabaseHelper重新计算
                     val updated = FuelRecord(
                         id = editRecord.id,
                         date = cal.time,
@@ -204,7 +204,7 @@ class MainActivity : AppCompatActivity() {
                         pricePerLiter = pricePerLiter,
                         totalCost = fuelAmount * pricePerLiter,
                         note = note,
-                        fuelConsumption = editRecord.fuelConsumption,
+                        fuelConsumption = 0.0,
                         fuelType = fuelType,
                         isFull = isFull
                     )

@@ -108,13 +108,20 @@ class DatabaseHelper(private val database: AppDatabase) {
         fuelType: Int = 92,
         isFull: Boolean = true
     ): Long {
-        // 获取上一条记录来计算油耗
-        val lastRecord = dao.getLastRecord()
-        val previousMileage = lastRecord?.mileage ?: 0.0
+        // 获取所有记录（按里程升序排序）
+        val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
+        
+        // 找到里程小于当前记录的最近一条加满记录
+        var previousFullRecord: FuelRecord? = null
+        for (rec in allRecords) {
+            if (rec.mileage < mileage && rec.isFull) {
+                previousFullRecord = rec
+            }
+        }
 
-        // 只有加满且里程增加时才计算油耗
-        val consumption = if (isFull && lastRecord != null && lastRecord.isFull && mileage > lastRecord.mileage) {
-            (fuelAmount / (mileage - lastRecord.mileage)) * 100.0
+        // 只有加满且有有效的前驱记录时才计算油耗
+        val consumption = if (isFull && previousFullRecord != null && mileage > previousFullRecord.mileage) {
+            (fuelAmount / (mileage - previousFullRecord.mileage)) * 100.0
         } else {
             0.0
         }
@@ -131,7 +138,12 @@ class DatabaseHelper(private val database: AppDatabase) {
             isFull = isFull
         )
 
-        return dao.insert(record)
+        val recordId = dao.insert(record)
+        
+        // 重新计算该记录及后续记录的油耗
+        recalculateConsumptionAfter(recordId)
+        
+        return recordId
     }
 
     /**
@@ -145,24 +157,30 @@ class DatabaseHelper(private val database: AppDatabase) {
     }
 
     /**
-     * 重新计算指定记录之后的所有记录的油耗
+     * 重新计算指定记录（包含）之后的所有记录的油耗
      */
-    private suspend fun recalculateConsumptionAfter(afterId: Long) {
-        val allRecords = dao.getAllRecordsAsc()
+    private suspend fun recalculateConsumptionAfter(fromId: Long) {
+        // 按里程升序排序，确保能正确找到前驱记录
+        val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
         var foundTarget = false
         var previousFullRecord: FuelRecord? = null
 
         for (rec in allRecords) {
-            if (rec.id == afterId) {
-                foundTarget = true
-                if (rec.isFull && rec.fuelConsumption > 0) {
-                    previousFullRecord = rec
+            if (!foundTarget) {
+                // 在找到目标记录之前，更新previousFullRecord
+                if (rec.id == fromId) {
+                    foundTarget = true
+                    // 继续处理当前记录，不要continue
+                } else {
+                    // 还没到目标记录，更新前驱记录（只要是加满的记录就可以作为前驱）
+                    if (rec.isFull) {
+                        previousFullRecord = rec
+                    }
+                    continue
                 }
-                continue
             }
-            if (!foundTarget) continue
 
-            // 重新计算油耗
+            // 重新计算油耗（包括目标记录本身及其后续记录）
             val newConsumption = if (rec.isFull && previousFullRecord != null && rec.mileage > previousFullRecord.mileage) {
                 (rec.fuelAmount / (rec.mileage - previousFullRecord.mileage)) * 100.0
             } else {
@@ -336,7 +354,8 @@ class DatabaseHelper(private val database: AppDatabase) {
      * 重新计算所有记录的油耗
      */
     private suspend fun recalculateAllConsumption() {
-        val allRecords = dao.getAllRecordsAsc()
+        // 按里程升序排序，确保能正确找到前驱记录
+        val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
         var previousFullRecord: FuelRecord? = null
 
         for (rec in allRecords) {
