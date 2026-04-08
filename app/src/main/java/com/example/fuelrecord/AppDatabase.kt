@@ -167,12 +167,10 @@ class DatabaseHelper(private val database: AppDatabase) {
 
         for (rec in allRecords) {
             if (!foundTarget) {
-                // 在找到目标记录之前，更新previousFullRecord
                 if (rec.id == fromId) {
                     foundTarget = true
-                    // 继续处理当前记录，不要continue
                 } else {
-                    // 还没到目标记录，更新前驱记录（只要是加满的记录就可以作为前驱）
+                    // 在找到目标记录之前，更新前驱记录（只要是加满的记录就可以作为前驱，不检查油耗）
                     if (rec.isFull) {
                         previousFullRecord = rec
                     }
@@ -192,7 +190,8 @@ class DatabaseHelper(private val database: AppDatabase) {
                 dao.update(updated)
             }
 
-            if (rec.isFull && newConsumption > 0) {
+            // 只要是加满的记录就作为后续记录的前驱，不判断油耗是否 > 0
+            if (rec.isFull) {
                 previousFullRecord = rec.copy(fuelConsumption = newConsumption)
             }
         }
@@ -209,7 +208,8 @@ class DatabaseHelper(private val database: AppDatabase) {
      * 获取所有记录并附带行驶里程信息（按日期降序）
      */
     suspend fun getAllRecordsWithDistance(): List<FuelRecordWithDistance> {
-        val allRecordsAsc = dao.getAllRecordsAsc().sortedBy { it.date }
+        // DAO已经按 mileage ASC 排序，直接使用（用于计算行驶里程）
+        val allRecordsAsc = dao.getAllRecordsAsc()
         val recordsMap = allRecordsAsc.associateBy { it.id }
         var previousRecord: FuelRecord? = null
         val result = mutableListOf<Pair<FuelRecord, FuelRecordWithDistance>>()
@@ -229,8 +229,8 @@ class DatabaseHelper(private val database: AppDatabase) {
             previousRecord = rec
         }
 
-        // 返回按日期降序（列表页从新到旧）
-        return result.sortedByDescending { it.first.date }.map { it.second }
+        // 返回按里程降序（列表页从大到小）
+        return result.sortedByDescending { it.first.mileage }.map { it.second }
     }
 
     /**
@@ -436,7 +436,7 @@ class DatabaseHelper(private val database: AppDatabase) {
                 dao.update(updated)
             }
 
-            if (rec.isFull && newConsumption > 0) {
+            if (rec.isFull) {
                 previousFullRecord = rec.copy(fuelConsumption = newConsumption)
             }
         }

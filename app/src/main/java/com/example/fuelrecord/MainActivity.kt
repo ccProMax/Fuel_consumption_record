@@ -143,7 +143,6 @@ class MainActivity : AppCompatActivity() {
         setupPriceLinking(etFuelAmount, etPricePerLiter, etTotalCost)
 
         // 日期选择
-        val dateCal = Calendar.getInstance()
         etDate.setOnClickListener {
             val cal = Calendar.getInstance()
             val dateStr = etDate.text?.toString()

@@ -21,13 +21,13 @@ interface FuelRecordDao {
     @Query("DELETE FROM fuel_records WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("SELECT * FROM fuel_records ORDER BY date DESC")
+    @Query("SELECT * FROM fuel_records ORDER BY mileage DESC")
     fun getAllRecords(): LiveData<List<FuelRecord>>
 
-    @Query("SELECT * FROM fuel_records ORDER BY date DESC")
+    @Query("SELECT * FROM fuel_records ORDER BY mileage DESC")
     suspend fun getAllRecordsSync(): List<FuelRecord>
 
-    @Query("SELECT * FROM fuel_records ORDER BY date ASC")
+    @Query("SELECT * FROM fuel_records ORDER BY mileage ASC")
     suspend fun getAllRecordsAsc(): List<FuelRecord>
 
     @Query("SELECT * FROM fuel_records WHERE id = :id")
