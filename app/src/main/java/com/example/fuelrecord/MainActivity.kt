@@ -263,12 +263,19 @@ class MainActivity : AppCompatActivity() {
                 val current = s?.toString()?.toDoubleOrNull()
                 if (current != null && current >= prevRecordMileage) {
                     val dist = current - prevRecordMileage
-                    etDistanceAdded.removeTextChangedListener(distanceWatcher)
-                    etDistanceAdded.setText(decimalFormat.format(dist))
-                    etDistanceAdded.addTextChangedListener(distanceWatcher)
+                    val newText = decimalFormat.format(dist)
+                    val currentText = etDistanceAdded.text?.toString() ?: ""
+                    if (currentText != newText) {
+                        etDistanceAdded.removeTextChangedListener(distanceWatcher)
+                        etDistanceAdded.setText(newText)
+                        etDistanceAdded.setSelection(newText.length)
+                        etDistanceAdded.addTextChangedListener(distanceWatcher)
+                    }
                 } else {
                     etDistanceAdded.removeTextChangedListener(distanceWatcher)
-                    etDistanceAdded.setText("")
+                    if (etDistanceAdded.text?.isNotEmpty() == true) {
+                        etDistanceAdded.setText("")
+                    }
                     etDistanceAdded.addTextChangedListener(distanceWatcher)
                 }
             }
@@ -281,9 +288,14 @@ class MainActivity : AppCompatActivity() {
                 val dist = s?.toString()?.toDoubleOrNull()
                 if (dist != null && dist >= 0) {
                     val mileage = prevRecordMileage + dist
-                    etMileage.removeTextChangedListener(mileageWatcher)
-                    etMileage.setText(decimalFormat.format(mileage))
-                    etMileage.addTextChangedListener(mileageWatcher)
+                    val newText = decimalFormat.format(mileage)
+                    val currentText = etMileage.text?.toString() ?: ""
+                    if (currentText != newText) {
+                        etMileage.removeTextChangedListener(mileageWatcher)
+                        etMileage.setText(newText)
+                        etMileage.setSelection(newText.length)
+                        etMileage.addTextChangedListener(mileageWatcher)
+                    }
                 }
             }
         }
@@ -301,7 +313,6 @@ class MainActivity : AppCompatActivity() {
      * - 修改加油量：用单价×油量计算总价
      * - 修改单价：用单价×油量计算总价
      * - 修改总价：用总价÷单价计算油量
-     * 删除键不会失效，因为 setText 只在 afterTextChanged 中调用
      */
     private fun setupPriceLinking(
         etFuelAmount: TextInputEditText,
@@ -322,7 +333,14 @@ class MainActivity : AppCompatActivity() {
                 val amount = s?.toString()?.toDoubleOrNull()
                 val price = etPricePerLiter.text?.toString()?.toDoubleOrNull()
                 if (amount != null && amount > 0 && price != null && price > 0) {
-                    etTotalCost.setText(moneyFormat.format(amount * price))
+                    val currentText = etTotalCost.text?.toString() ?: ""
+                    val newText = moneyFormat.format(amount * price)
+                    if (currentText != newText) {
+                        val cursorPos = etTotalCost.selectionStart
+                        etTotalCost.setText(newText)
+                        // 恢复光标位置到末尾
+                        etTotalCost.setSelection(newText.length)
+                    }
                 }
                 amountUpdating = false
             }
@@ -338,7 +356,13 @@ class MainActivity : AppCompatActivity() {
                 val price = s?.toString()?.toDoubleOrNull()
                 val amount = etFuelAmount.text?.toString()?.toDoubleOrNull()
                 if (price != null && price > 0 && amount != null && amount > 0) {
-                    etTotalCost.setText(moneyFormat.format(amount * price))
+                    val currentText = etTotalCost.text?.toString() ?: ""
+                    val newText = moneyFormat.format(amount * price)
+                    if (currentText != newText) {
+                        val cursorPos = etTotalCost.selectionStart
+                        etTotalCost.setText(newText)
+                        etTotalCost.setSelection(newText.length)
+                    }
                 }
                 priceUpdating = false
             }
@@ -354,7 +378,18 @@ class MainActivity : AppCompatActivity() {
                 val total = s?.toString()?.toDoubleOrNull()
                 val price = etPricePerLiter.text?.toString()?.toDoubleOrNull()
                 if (total != null && total > 0 && price != null && price > 0) {
-                    etFuelAmount.setText(decimalFormat.format(total / price))
+                    val currentText = etFuelAmount.text?.toString() ?: ""
+                    val newText = decimalFormat.format(total / price)
+                    if (currentText != newText) {
+                        etFuelAmount.setText(newText)
+                        etFuelAmount.setSelection(newText.length)
+                    }
+                } else if (total == null || total == 0.0) {
+                    // 用户删除了总价，清空加油量
+                    val currentText = etFuelAmount.text?.toString() ?: ""
+                    if (currentText.isNotEmpty()) {
+                        etFuelAmount.setText("")
+                    }
                 }
                 totalUpdating = false
             }
