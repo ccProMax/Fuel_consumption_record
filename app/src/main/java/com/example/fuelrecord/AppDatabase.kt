@@ -111,17 +111,17 @@ class DatabaseHelper(private val database: AppDatabase) {
         // 获取所有记录（按里程升序排序）
         val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
         
-        // 找到里程小于当前记录的最近一条加满记录
-        var previousFullRecord: FuelRecord? = null
+        // 找到里程小于当前记录的最近一条记录
+        var previousRecord: FuelRecord? = null
         for (rec in allRecords) {
-            if (rec.mileage < mileage && rec.isFull) {
-                previousFullRecord = rec
+            if (rec.mileage < mileage) {
+                previousRecord = rec
             }
         }
 
-        // 只有加满且有有效的前驱记录时才计算油耗
-        val consumption = if (isFull && previousFullRecord != null && mileage > previousFullRecord.mileage) {
-            (fuelAmount / (mileage - previousFullRecord.mileage)) * 100.0
+        // 只有当前记录加满，且上一条记录也加满时，才计算油耗
+        val consumption = if (isFull && previousRecord != null && previousRecord.isFull && mileage > previousRecord.mileage) {
+            (fuelAmount / (mileage - previousRecord.mileage)) * 100.0
         } else {
             0.0
         }
@@ -163,24 +163,23 @@ class DatabaseHelper(private val database: AppDatabase) {
         // 按里程升序排序，确保能正确找到前驱记录
         val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
         var foundTarget = false
-        var previousFullRecord: FuelRecord? = null
+        var previousRecord: FuelRecord? = null
 
         for (rec in allRecords) {
             if (!foundTarget) {
                 if (rec.id == fromId) {
                     foundTarget = true
                 } else {
-                    // 在找到目标记录之前，更新前驱记录（只要是加满的记录就可以作为前驱，不检查油耗）
-                    if (rec.isFull) {
-                        previousFullRecord = rec
-                    }
+                    // 在找到目标记录之前，更新前驱记录
+                    previousRecord = rec
                     continue
                 }
             }
 
             // 重新计算油耗（包括目标记录本身及其后续记录）
-            val newConsumption = if (rec.isFull && previousFullRecord != null && rec.mileage > previousFullRecord.mileage) {
-                (rec.fuelAmount / (rec.mileage - previousFullRecord.mileage)) * 100.0
+            // 只有当前记录加满，且上一条记录也加满时，才计算油耗
+            val newConsumption = if (rec.isFull && previousRecord != null && previousRecord.isFull && rec.mileage > previousRecord.mileage) {
+                (rec.fuelAmount / (rec.mileage - previousRecord.mileage)) * 100.0
             } else {
                 0.0
             }
@@ -190,10 +189,8 @@ class DatabaseHelper(private val database: AppDatabase) {
                 dao.update(updated)
             }
 
-            // 只要是加满的记录就作为后续记录的前驱，不判断油耗是否 > 0
-            if (rec.isFull) {
-                previousFullRecord = rec.copy(fuelConsumption = newConsumption)
-            }
+            // 更新前驱记录
+            previousRecord = rec
         }
     }
 
@@ -422,11 +419,12 @@ class DatabaseHelper(private val database: AppDatabase) {
     private suspend fun recalculateAllConsumption() {
         // 按里程升序排序，确保能正确找到前驱记录
         val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
-        var previousFullRecord: FuelRecord? = null
+        var previousRecord: FuelRecord? = null
 
         for (rec in allRecords) {
-            val newConsumption = if (rec.isFull && previousFullRecord != null && rec.mileage > previousFullRecord.mileage) {
-                (rec.fuelAmount / (rec.mileage - previousFullRecord.mileage)) * 100.0
+            // 只有当前记录加满，且上一条记录也加满时，才计算油耗
+            val newConsumption = if (rec.isFull && previousRecord != null && previousRecord.isFull && rec.mileage > previousRecord.mileage) {
+                (rec.fuelAmount / (rec.mileage - previousRecord.mileage)) * 100.0
             } else {
                 0.0
             }
@@ -436,9 +434,8 @@ class DatabaseHelper(private val database: AppDatabase) {
                 dao.update(updated)
             }
 
-            if (rec.isFull) {
-                previousFullRecord = rec.copy(fuelConsumption = newConsumption)
-            }
+            // 更新前驱记录
+            previousRecord = rec
         }
     }
 }
