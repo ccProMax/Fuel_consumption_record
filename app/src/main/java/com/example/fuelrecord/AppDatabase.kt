@@ -290,8 +290,51 @@ class DatabaseHelper(private val database: AppDatabase) {
     // ==================== 看板相关方法 ====================
 
     /**
-     * 获取看板统计数据
+     * 获取看板周期性统计数据（受时间周期影响）
      */
+    suspend fun getDashboardPeriodStats(months: Int): DashboardPeriodStats {
+        val startDate = getStartDateForMonths(months)
+
+        val avgConsumption = dao.getAvgConsumptionInRange(startDate) ?: 0.0
+        // 每百公里平均花费（元/100km）
+        val avgCostPer100km = dao.getAvgCostPer100kmInRange(startDate) ?: 0.0
+        // 转换为每公里花费（元/km）
+        val avgPricePerKm = avgCostPer100km / 100.0
+
+        val periodLabel = when {
+            months == -1 -> "今年来"
+            months == 1 -> "近1月"
+            else -> "近${months}月"
+        }
+
+        return DashboardPeriodStats(
+            periodLabel = periodLabel,
+            avgConsumption = avgConsumption,
+            avgPricePerKm = avgPricePerKm
+        )
+    }
+
+    /**
+     * 获取看板全局统计数据（不受时间周期影响）
+     */
+    suspend fun getDashboardGlobalStats(): DashboardGlobalStats {
+        val totalDistance = dao.getTotalDistance()
+        val totalFuel = dao.getTotalFuelAmount() ?: 0.0
+        val totalCost = dao.getTotalCost() ?: 0.0
+        val avgPrice = dao.getAveragePrice() ?: 0.0
+
+        return DashboardGlobalStats(
+            totalDistance = totalDistance,
+            totalFuelAmount = totalFuel,
+            totalCost = totalCost,
+            avgPricePerLiter = avgPrice
+        )
+    }
+
+    /**
+     * 获取看板统计数据（已废弃，保留用于兼容）
+     */
+    @Deprecated("使用 getDashboardPeriodStats 和 getDashboardGlobalStats 替代")
     suspend fun getDashboardStats(months: Int): DashboardStats {
         val startDate = getStartDateForMonths(months)
 

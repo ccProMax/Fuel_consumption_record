@@ -159,12 +159,16 @@
 
                 <TextView
                     android:id="@+id/tvTotalDistance"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:maxLines="1"
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeTextType="uniform"
                     android:textStyle="bold" />
 
                 <TextView
@@ -197,12 +201,16 @@
 
                 <TextView
                     android:id="@+id/tvTotalFuel"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:maxLines="1"
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeTextType="uniform"
                     android:textStyle="bold" />
 
                 <TextView
@@ -235,12 +243,16 @@
 
                 <TextView
                     android:id="@+id/tvTotalCost"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:maxLines="1"
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeTextType="uniform"
                     android:textStyle="bold" />
 
                 <TextView
@@ -273,12 +285,16 @@
 
                 <TextView
                     android:id="@+id/tvAvgPrice"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:maxLines="1"
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeMinTextSize="10sp"
+                    app:autoSizeTextType="uniform"
                     android:textStyle="bold" />
 
                 <TextView

@@ -95,8 +95,28 @@ data class FuelStatistics(
 )
 
 /**
- * 看板统计信息（按时间周期）
+ * 看板周期性统计信息（受时间周期影响）
  */
+data class DashboardPeriodStats(
+    val periodLabel: String,
+    val avgConsumption: Double = 0.0,
+    val avgPricePerKm: Double = 0.0
+)
+
+/**
+ * 看板全局统计信息（不受时间周期影响）
+ */
+data class DashboardGlobalStats(
+    val totalDistance: Double = 0.0,
+    val totalFuelAmount: Double = 0.0,
+    val totalCost: Double = 0.0,
+    val avgPricePerLiter: Double = 0.0
+)
+
+/**
+ * 看板统计信息（按时间周期）- 已废弃，保留用于兼容
+ */
+@Deprecated("使用 DashboardPeriodStats 和 DashboardGlobalStats 替代")
 data class DashboardStats(
     val periodLabel: String,
     val avgConsumption: Double = 0.0,

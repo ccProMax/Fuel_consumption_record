@@ -69,6 +69,7 @@ class DashboardFragment : Fragment() {
         binding.spinnerPeriod.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedOption = periodOptions[position]
+                // 设置dashboardMonths会自动触发loadDashboardData()
                 viewModel.dashboardMonths = selectedOption.months
             }
 
@@ -77,9 +78,14 @@ class DashboardFragment : Fragment() {
     }
 
     private fun observeData() {
-        viewModel.dashboardStats.observe(viewLifecycleOwner) { stats ->
+        // 观察周期性数据（受时间周期影响）
+        viewModel.dashboardPeriodStats.observe(viewLifecycleOwner) { stats ->
             binding.tvAvgConsumption.text = decimalFormat.format(stats.avgConsumption)
-            binding.tvPricePer100km.text = decimalFormat.format(stats.avgPricePer100km)
+            binding.tvPricePer100km.text = decimalFormat.format(stats.avgPricePerKm)
+        }
+
+        // 观察全局数据（不受时间周期影响）
+        viewModel.dashboardGlobalStats.observe(viewLifecycleOwner) { stats ->
             binding.tvTotalDistance.text = decimalFormat.format(stats.totalDistance)
             binding.tvTotalFuel.text = decimalFormat.format(stats.totalFuelAmount)
             binding.tvTotalCost.text = moneyFormat.format(stats.totalCost)

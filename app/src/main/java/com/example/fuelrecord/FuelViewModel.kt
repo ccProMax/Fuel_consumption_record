@@ -23,6 +23,8 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
 
     // 看板数据
     private val _dashboardStats = MutableLiveData<DashboardStats>()
+    private val _dashboardPeriodStats = MutableLiveData<DashboardPeriodStats>()
+    private val _dashboardGlobalStats = MutableLiveData<DashboardGlobalStats>()
     private val _consumptionChartData = MutableLiveData<List<ChartPoint>>()
     private val _fuelPriceChartData = MutableLiveData<List<ChartPoint>>()
     private val _costPer100kmChartData = MutableLiveData<List<ChartPoint>>()
@@ -34,6 +36,8 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
     val isLoading: LiveData<Boolean> get() = _isLoading
     val errorMessage: LiveData<String?> get() = _errorMessage
     val dashboardStats: LiveData<DashboardStats> get() = _dashboardStats
+    val dashboardPeriodStats: LiveData<DashboardPeriodStats> get() = _dashboardPeriodStats
+    val dashboardGlobalStats: LiveData<DashboardGlobalStats> get() = _dashboardGlobalStats
     val consumptionChartData: LiveData<List<ChartPoint>> get() = _consumptionChartData
     val fuelPriceChartData: LiveData<List<ChartPoint>> get() = _fuelPriceChartData
     val costPer100kmChartData: LiveData<List<ChartPoint>> get() = _costPer100kmChartData
@@ -49,7 +53,8 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
         get() = prefs.getInt("dashboard_months", 6)
         set(value) {
             prefs.edit().putInt("dashboard_months", value).apply()
-            loadDashboardData()
+            // 直接传递新值，避免异步读取时可能还未写入的问题
+            loadDashboardData(value)
         }
 
     init {
@@ -177,16 +182,22 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * 加载看板数据
      */
-    fun loadDashboardData() {
+    fun loadDashboardData(months: Int = dashboardMonths) {
         viewModelScope.launch {
             try {
-                val months = dashboardMonths
-                _dashboardStats.value = databaseHelper.getDashboardStats(months)
+                // 加载周期性数据（受时间周期影响）
+                _dashboardPeriodStats.value = databaseHelper.getDashboardPeriodStats(months)
                 _consumptionChartData.value = databaseHelper.getConsumptionData(months)
                 _fuelPriceChartData.value = databaseHelper.getFuelPriceData(months)
                 _costPer100kmChartData.value = databaseHelper.getCostPer100kmData(months)
                 _monthlyFuelChartData.value = databaseHelper.getMonthlyFuelData(months)
                 _monthlyCostChartData.value = databaseHelper.getMonthlyCostData(months)
+
+                // 加载全局数据（不受时间周期影响）
+                _dashboardGlobalStats.value = databaseHelper.getDashboardGlobalStats()
+
+                // 保留旧接口兼容
+                _dashboardStats.value = databaseHelper.getDashboardStats(months)
             } catch (e: Exception) {
                 _errorMessage.value = "加载看板数据失败: ${e.message}"
             }
