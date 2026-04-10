@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.Date
 
 /**
@@ -245,6 +246,15 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
      */
     suspend fun getAllRecords(): List<FuelRecord> {
         return databaseHelper.getAllRecords()
+    }
+
+    /**
+     * 同步获取所有记录（按里程降序）
+     */
+    fun getAllRecordsSync(): List<FuelRecord> {
+        return runBlocking {
+            databaseHelper.getAllRecords()
+        }
     }
 
     /**

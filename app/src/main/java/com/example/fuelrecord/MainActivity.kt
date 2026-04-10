@@ -98,11 +98,14 @@ class MainActivity : AppCompatActivity() {
 
         // 获取前一条记录的里程（用于计算行驶里程）
         // 添加模式：取最新一条记录的里程
-        // 编辑模式：取当前记录在列表中"下一个"记录（即日期更早的那条）的里程
+        // 编辑模式：通过里程来查找前驱记录，而不是通过索引
         val prevRecordMileage: Double? = if (editRecord != null) {
-            val currentIndex = recordsWithDistance.indexOfFirst { it.record.id == editRecord.id }
-            if (currentIndex >= 0 && currentIndex < recordsWithDistance.size - 1) {
-                recordsWithDistance[currentIndex + 1].record.mileage
+            // 获取所有记录并按里程降序排序
+            val allRecords = viewModel.getAllRecordsSync()
+            val recordsByMileage = allRecords.sortedByDescending { it.mileage }
+            val currentIndex = recordsByMileage.indexOfFirst { it.id == editRecord.id }
+            if (currentIndex >= 0 && currentIndex < recordsByMileage.size - 1) {
+                recordsByMileage[currentIndex + 1].mileage
             } else {
                 null
             }
