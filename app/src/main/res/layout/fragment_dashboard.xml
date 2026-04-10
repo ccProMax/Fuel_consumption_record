@@ -167,7 +167,11 @@
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="8sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeStepGranularity="1sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -207,7 +211,11 @@
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="8sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeStepGranularity="1sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -247,7 +255,11 @@
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="8sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeStepGranularity="1sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -287,7 +299,11 @@
                     android:text="0"
                     android:textColor="@color/primary_text"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="8sp"
+                    app:autoSizeMaxTextSize="20sp"
+                    app:autoSizeStepGranularity="1sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
