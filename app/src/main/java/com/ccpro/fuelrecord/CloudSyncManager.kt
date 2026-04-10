@@ -1,4 +1,4 @@
-package com.example.fuelrecord
+package com.ccpro.fuelrecord
 
 import android.content.Context
 import android.content.SharedPreferences

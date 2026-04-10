@@ -342,7 +342,7 @@
                     android:textColor="@color/accent_color"
                     android:textSize="11sp" />
 
-                <com.example.fuelrecord.LineChartView
+                <com.ccpro.fuelrecord.LineChartView
                     android:id="@+id/chartConsumption"
                     android:layout_width="match_parent"
                     android:layout_height="240dp"
@@ -378,7 +378,7 @@
                     android:textColor="@color/primary_color"
                     android:textSize="11sp" />
 
-                <com.example.fuelrecord.LineChartView
+                <com.ccpro.fuelrecord.LineChartView
                     android:id="@+id/chartFuelPrice"
                     android:layout_width="match_parent"
                     android:layout_height="240dp"
@@ -414,7 +414,7 @@
                     android:textColor="@color/success_color"
                     android:textSize="11sp" />
 
-                <com.example.fuelrecord.LineChartView
+                <com.ccpro.fuelrecord.LineChartView
                     android:id="@+id/chartCostPer100km"
                     android:layout_width="match_parent"
                     android:layout_height="240dp"

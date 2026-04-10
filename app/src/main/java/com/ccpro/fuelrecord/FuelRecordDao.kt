@@ -1,4 +1,4 @@
-package com.example.fuelrecord
+package com.ccpro.fuelrecord
 
 import androidx.lifecycle.LiveData
 import androidx.room.*

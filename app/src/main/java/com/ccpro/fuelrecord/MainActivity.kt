@@ -1,4 +1,4 @@
-package com.example.fuelrecord
+package com.ccpro.fuelrecord
 
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
-import com.example.fuelrecord.databinding.ActivityMainBinding
+import com.ccpro.fuelrecord.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.tabs.TabLayout

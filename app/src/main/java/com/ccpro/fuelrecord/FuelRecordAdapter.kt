@@ -1,4 +1,4 @@
-package com.example.fuelrecord
+package com.ccpro.fuelrecord
 
 import android.graphics.Color
 import android.text.SpannableString

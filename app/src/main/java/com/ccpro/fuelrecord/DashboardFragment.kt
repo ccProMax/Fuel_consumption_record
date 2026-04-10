@@ -1,4 +1,4 @@
-package com.example.fuelrecord
+package com.ccpro.fuelrecord
 
 import android.graphics.Color
 import android.os.Bundle
@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
-import com.example.fuelrecord.databinding.FragmentDashboardBinding
+import com.ccpro.fuelrecord.databinding.FragmentDashboardBinding
 import java.text.DecimalFormat
 import java.util.Calendar
 

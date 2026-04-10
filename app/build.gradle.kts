@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.fuelrecord"
+    namespace = "com.ccpro.fuelrecord"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.fuelrecord"
+        applicationId = "com.ccpro.fuelrecord"
         minSdk = 21
         targetSdk = 34
         versionCode = 1

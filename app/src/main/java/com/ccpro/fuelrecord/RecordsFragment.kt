@@ -1,4 +1,4 @@
-package com.example.fuelrecord
+package com.ccpro.fuelrecord
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fuelrecord.databinding.FragmentRecordsBinding
+import com.ccpro.fuelrecord.databinding.FragmentRecordsBinding
 
 class RecordsFragment : Fragment() {
 
