@@ -8,7 +8,7 @@ foreground_icons = [
 ]
 
 # 内边距（像素）
-padding = 20  # 108的1/9，这是Android推荐的内边距
+padding = 32  # 108的1/9，这是Android推荐的内边距
 
 try:
     for icon_path in foreground_icons:
