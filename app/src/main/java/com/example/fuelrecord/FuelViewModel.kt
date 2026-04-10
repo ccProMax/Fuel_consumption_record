@@ -239,4 +239,18 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
     fun clearErrorMessage() {
         _errorMessage.value = null
     }
+
+    /**
+     * 获取所有记录（用于同步）
+     */
+    suspend fun getAllRecords(): List<FuelRecord> {
+        return databaseHelper.getAllRecords()
+    }
+
+    /**
+     * 插入记录（用于同步）
+     */
+    suspend fun insertRecord(record: FuelRecord) {
+        databaseHelper.insertRecord(record)
+    }
 }

@@ -240,6 +240,13 @@ class DatabaseHelper(private val database: AppDatabase) {
     }
 
     /**
+     * 插入记录（用于同步）
+     */
+    suspend fun insertRecord(record: FuelRecord) {
+        dao.insert(record)
+    }
+
+    /**
      * 更新记录（不重新计算油耗，由上层决定）
      */
     suspend fun updateRecord(record: FuelRecord) {

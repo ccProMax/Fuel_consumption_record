@@ -7,6 +7,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.fuelrecord.databinding.ActivityMainBinding
@@ -15,6 +16,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import java.util.*
 
@@ -31,7 +33,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 设置Toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false) // 不显示默认标题，因为我们有自定义标题
+
         setupViewPager()
+
+        // 设置同步按钮点击事件
+        binding.btnSync.setOnClickListener {
+            showSyncDialog()
+        }
     }
 
     private fun setupViewPager() {
@@ -152,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                     cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
                 }
             }
-            DatePickerDialog(
+            val datePickerDialog = DatePickerDialog(
                 this,
                 { _, year, month, dayOfMonth ->
                     cal.set(year, month, dayOfMonth)
@@ -161,7 +172,10 @@ class MainActivity : AppCompatActivity() {
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)
-            ).show()
+            )
+            // 限制最大日期为今天
+            datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
+            datePickerDialog.show()
         }
 
         // 解析日期
@@ -394,5 +408,148 @@ class MainActivity : AppCompatActivity() {
                 totalUpdating = false
             }
         })
+    }
+
+    /**
+     * 显示同步配置对话框
+     */
+    private fun showSyncDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_sync_config, null)
+        val etShareID = dialogView.findViewById<TextInputEditText>(R.id.etShareID)
+        val etAccessToken = dialogView.findViewById<TextInputEditText>(R.id.etAccessToken)
+        val etPassword = dialogView.findViewById<TextInputEditText>(R.id.etPassword)
+        val btnDownload = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDownload)
+        val btnUpload = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnUpload)
+
+        val syncManager = CloudSyncManager(this)
+
+        // 加载保存的配置
+        val savedConfig = syncManager.loadSyncConfig()
+        if (savedConfig != null) {
+            etShareID.setText(savedConfig.shareID)
+            etAccessToken.setText(savedConfig.accessToken)
+            etPassword.setText(savedConfig.password)
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .setNegativeButton(R.string.btn_cancel, null)
+            .create()
+
+        // 初始禁用按钮
+        btnDownload.isEnabled = false
+        btnUpload.isEnabled = false
+
+        // 监听输入框变化，控制按钮状态
+        val textWatcher = object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val shareID = etShareID.text?.toString()?.isNotEmpty() == true
+                val accessToken = etAccessToken.text?.toString()?.isNotEmpty() == true
+                val password = etPassword.text?.toString()?.isNotEmpty() == true
+                val allFilled = shareID && accessToken && password
+                btnDownload.isEnabled = allFilled
+                btnUpload.isEnabled = allFilled
+            }
+        }
+
+        etShareID.addTextChangedListener(textWatcher)
+        etAccessToken.addTextChangedListener(textWatcher)
+        etPassword.addTextChangedListener(textWatcher)
+
+        // 下载按钮点击事件
+        btnDownload.setOnClickListener {
+            val shareID = etShareID.text?.toString() ?: ""
+            val accessToken = etAccessToken.text?.toString() ?: ""
+            val password = etPassword.text?.toString() ?: ""
+            
+            val config = CloudSyncManager.SyncConfig(shareID, accessToken, password)
+            
+            lifecycleScope.launch {
+                try {
+                    // 显示加载提示
+                    Toast.makeText(this@MainActivity, "正在下载数据...", Toast.LENGTH_SHORT).show()
+                    
+                    val result = syncManager.downloadData(config)
+                    result.fold(
+                        onSuccess = { records ->
+                            android.util.Log.d("MainActivity", "下载成功，共${records.size}条记录")
+                            // 保存配置
+                            syncManager.saveSyncConfig(config)
+                            // 下载成功，清空本地数据并插入新数据
+                            viewModel.clearAllRecords()
+                            android.util.Log.d("MainActivity", "已清空本地数据")
+                            
+                            var insertedCount = 0
+                            records.forEach { record ->
+                                viewModel.insertRecord(record)
+                                insertedCount++
+                                android.util.Log.d("MainActivity", "插入记录 $insertedCount/${records.size}: $record")
+                            }
+                            android.util.Log.d("MainActivity", "所有记录插入完成")
+                            
+                            // 等待数据库操作完成
+                            kotlinx.coroutines.delay(500)
+                            
+                            // 重新加载数据
+                            viewModel.loadAllRecords()
+                            android.util.Log.d("MainActivity", "已重新加载数据")
+                            
+                            // 验证数据是否正确插入
+                            val currentRecords = viewModel.getAllRecords()
+                            android.util.Log.d("MainActivity", "当前数据库中共有${currentRecords.size}条记录")
+                            
+                            Toast.makeText(this@MainActivity, "下载成功，共${records.size}条记录", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        },
+                        onFailure = { error ->
+                            android.util.Log.e("MainActivity", "下载失败", error)
+                            Toast.makeText(this@MainActivity, "下载失败: ${error.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "下载失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        // 上传按钮点击事件
+        btnUpload.setOnClickListener {
+            val shareID = etShareID.text?.toString() ?: ""
+            val accessToken = etAccessToken.text?.toString() ?: ""
+            val password = etPassword.text?.toString() ?: ""
+            
+            val config = CloudSyncManager.SyncConfig(shareID, accessToken, password)
+            
+            lifecycleScope.launch {
+                try {
+                    // 显示加载提示
+                    Toast.makeText(this@MainActivity, "正在上传数据...", Toast.LENGTH_SHORT).show()
+                    
+                    val records = viewModel.getAllRecords()
+                    android.util.Log.d("MainActivity", "准备上传${records.size}条记录")
+                    val result = syncManager.uploadData(config, records)
+                    result.fold(
+                        onSuccess = {
+                            android.util.Log.d("MainActivity", "上传成功，共${records.size}条记录")
+                            // 保存配置
+                            syncManager.saveSyncConfig(config)
+                            Toast.makeText(this@MainActivity, "上传成功，共${records.size}条记录", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        },
+                        onFailure = { error ->
+                            android.util.Log.e("MainActivity", "上传失败", error)
+                            Toast.makeText(this@MainActivity, "上传失败: ${error.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "上传失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        dialog.show()
     }
 }
