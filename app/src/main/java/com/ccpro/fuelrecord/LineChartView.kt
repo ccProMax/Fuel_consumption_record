@@ -93,6 +93,9 @@ class LineChartView @JvmOverloads constructor(
         }
         canvas.drawPath(path, linePaint)
 
+        // 计算标签间隔,避免重叠
+        val labelInterval = calculateLabelInterval(dataPoints.size, stepX)
+
         // 绘制数据点和标签
         dataPoints.forEachIndexed { index, point ->
             val x = padding + index * stepX
@@ -102,11 +105,36 @@ class LineChartView @JvmOverloads constructor(
             // 数据点
             canvas.drawCircle(x, y, 10f, pointPaint)
 
-            // 数值标签
-            canvas.drawText(decimalFormat.format(point.value), x, y - 20f, valuePaint)
+            // 数值标签(根据间隔显示)
+            if (index % labelInterval == 0) {
+                canvas.drawText(decimalFormat.format(point.value), x, y - 20f, valuePaint)
+            }
 
-            // X轴标签
-            canvas.drawText(point.label, x, height - 10f, labelPaint)
+            // X轴标签(根据间隔显示)
+            if (index % labelInterval == 0) {
+                canvas.drawText(point.label, x, height - 10f, labelPaint)
+            }
         }
+    }
+
+    /**
+     * 计算标签间隔,避免重叠
+     * @param dataCount 数据点数量
+     * @param stepX X轴步长(像素)
+     * @return 标签间隔(每隔几个点显示一个标签)
+     */
+    private fun calculateLabelInterval(dataCount: Int, stepX: Float): Int {
+        if (dataCount <= 7) return 1  // 7个或更少的数据点,全部显示
+
+        // 估算标签宽度(假设日期标签大约需要60dp宽度)
+        val labelWidthDp = 60f
+        val density = resources.displayMetrics.density
+        val labelWidthPx = labelWidthDp * density
+
+        // 计算需要多少个间隔才能避免重叠
+        val minInterval = (labelWidthPx / stepX).toInt()
+
+        // 返回合适的间隔,至少为1,最大不超过数据点数的一半
+        return maxOf(1, kotlin.math.min(minInterval, dataCount / 2))
     }
 }
