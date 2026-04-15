@@ -73,6 +73,9 @@ class RecordsFragment : Fragment() {
         binding.btnExport.setOnClickListener {
             exportToCsv()
         }
+        binding.fabRefresh.setOnClickListener {
+            viewModel.recalculateAllConsumption()
+        }
     }
 
     private fun showDeleteConfirmDialog(record: FuelRecord) {

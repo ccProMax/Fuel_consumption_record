@@ -64,6 +64,20 @@
             android:visibility="gone" />
     </LinearLayout>
 
+    <!-- 刷新按钮 -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabRefresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="88dp"
+        android:src="@drawable/ic_refresh"
+        android:contentDescription="@string/refresh_consumption"
+        app:fabSize="mini"
+        app:tint="@android:color/white"
+        app:maxImageSize="24dp" />
+
     <!-- 添加按钮 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddRecord"

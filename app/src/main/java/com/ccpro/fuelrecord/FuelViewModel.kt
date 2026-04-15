@@ -237,6 +237,26 @@ class FuelViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * 重新计算所有记录的油耗
+     */
+    fun recalculateAllConsumption() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                databaseHelper.recalculateAllConsumption()
+                loadAllRecords()
+                loadStatistics()
+                loadDashboardData()
+                _errorMessage.value = "油耗重新计算完成"
+            } catch (e: Exception) {
+                _errorMessage.value = "重新计算油耗失败: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun clearErrorMessage() {
         _errorMessage.value = null
     }

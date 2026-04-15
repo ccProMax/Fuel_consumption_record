@@ -111,17 +111,29 @@ class DatabaseHelper(private val database: AppDatabase) {
         // 获取所有记录（按里程升序排序）
         val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
         
-        // 找到里程小于当前记录的最近一条记录
-        var previousRecord: FuelRecord? = null
+        // 找到里程小于当前记录的最近一条加满记录，以及该加满记录之后的所有未加满记录
+        var previousFullRecord: FuelRecord? = null
+        val nonFullRecords = mutableListOf<FuelRecord>()
+
         for (rec in allRecords) {
             if (rec.mileage < mileage) {
-                previousRecord = rec
+                if (rec.isFull) {
+                    // 遇到新的加满记录，清空之前的未加满记录列表
+                    previousFullRecord = rec
+                    nonFullRecords.clear()
+                } else {
+                    // 记录未加满的记录
+                    nonFullRecords.add(rec)
+                }
             }
         }
 
-        // 只有当前记录加满，且上一条记录也加满时，才计算油耗
-        val consumption = if (isFull && previousRecord != null && previousRecord.isFull && mileage > previousRecord.mileage) {
-            (fuelAmount / (mileage - previousRecord.mileage)) * 100.0
+        // 计算油耗
+        // 只有当前加满，且之前有加满记录时才计算
+        val consumption = if (isFull && previousFullRecord != null && mileage > previousFullRecord.mileage) {
+            // 累加所有未加满记录的加油量，再加上当前加油量
+            val totalFuel = nonFullRecords.sumOf { it.fuelAmount } + fuelAmount
+            (totalFuel / (mileage - previousFullRecord.mileage)) * 100.0
         } else {
             0.0
         }
@@ -163,7 +175,8 @@ class DatabaseHelper(private val database: AppDatabase) {
         // 按里程升序排序，确保能正确找到前驱记录
         val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
         var foundTarget = false
-        var previousRecord: FuelRecord? = null
+        var previousFullRecord: FuelRecord? = null
+        val nonFullRecords = mutableListOf<FuelRecord>()
 
         for (rec in allRecords) {
             if (!foundTarget) {
@@ -171,15 +184,23 @@ class DatabaseHelper(private val database: AppDatabase) {
                     foundTarget = true
                 } else {
                     // 在找到目标记录之前，更新前驱记录
-                    previousRecord = rec
+                    if (rec.isFull) {
+                        previousFullRecord = rec
+                        nonFullRecords.clear()  // 遇到新的加满记录，清空未加满记录列表
+                    } else {
+                        // 记录未加满的记录
+                        nonFullRecords.add(rec)
+                    }
                     continue
                 }
             }
 
             // 重新计算油耗（包括目标记录本身及其后续记录）
-            // 只有当前记录加满，且上一条记录也加满时，才计算油耗
-            val newConsumption = if (rec.isFull && previousRecord != null && previousRecord.isFull && rec.mileage > previousRecord.mileage) {
-                (rec.fuelAmount / (rec.mileage - previousRecord.mileage)) * 100.0
+            // 只有当前加满，且之前有加满记录时才计算
+            val newConsumption = if (rec.isFull && previousFullRecord != null && rec.mileage > previousFullRecord.mileage) {
+                // 累加所有未加满记录的加油量，再加上当前加油量
+                val totalFuel = nonFullRecords.sumOf { it.fuelAmount } + rec.fuelAmount
+                (totalFuel / (rec.mileage - previousFullRecord.mileage)) * 100.0
             } else {
                 0.0
             }
@@ -190,7 +211,13 @@ class DatabaseHelper(private val database: AppDatabase) {
             }
 
             // 更新前驱记录
-            previousRecord = rec
+            if (rec.isFull) {
+                previousFullRecord = rec
+                nonFullRecords.clear()  // 遇到新的加满记录，清空未加满记录列表
+            } else {
+                // 记录未加满的记录
+                nonFullRecords.add(rec)
+            }
         }
     }
 
@@ -457,24 +484,28 @@ class DatabaseHelper(private val database: AppDatabase) {
     }
 
     /**
-     * 搜索记录
+     * 重新计算所有记录的油耗
      */
-    suspend fun searchRecords(keyword: String): List<FuelRecord> {
-        return dao.searchRecords(keyword)
+    suspend fun recalculateAllConsumption() {
+        recalculateAllConsumptionInternal()
     }
 
     /**
-     * 重新计算所有记录的油耗
+     * 内部方法:重新计算所有记录的油耗
      */
-    private suspend fun recalculateAllConsumption() {
+    private suspend fun recalculateAllConsumptionInternal() {
         // 按里程升序排序，确保能正确找到前驱记录
         val allRecords = dao.getAllRecordsAsc().sortedBy { it.mileage }
-        var previousRecord: FuelRecord? = null
+        var previousFullRecord: FuelRecord? = null
+        val nonFullRecords = mutableListOf<FuelRecord>()
 
         for (rec in allRecords) {
-            // 只有当前记录加满，且上一条记录也加满时，才计算油耗
-            val newConsumption = if (rec.isFull && previousRecord != null && previousRecord.isFull && rec.mileage > previousRecord.mileage) {
-                (rec.fuelAmount / (rec.mileage - previousRecord.mileage)) * 100.0
+            // 计算油耗
+            // 只有当前加满，且之前有加满记录时才计算
+            val newConsumption = if (rec.isFull && previousFullRecord != null && rec.mileage > previousFullRecord.mileage) {
+                // 累加所有未加满记录的加油量，再加上当前加油量
+                val totalFuel = nonFullRecords.sumOf { it.fuelAmount } + rec.fuelAmount
+                (totalFuel / (rec.mileage - previousFullRecord.mileage)) * 100.0
             } else {
                 0.0
             }
@@ -485,7 +516,20 @@ class DatabaseHelper(private val database: AppDatabase) {
             }
 
             // 更新前驱记录
-            previousRecord = rec
+            if (rec.isFull) {
+                previousFullRecord = rec
+                nonFullRecords.clear()  // 遇到新的加满记录，清空未加满记录列表
+            } else {
+                // 记录未加满的记录
+                nonFullRecords.add(rec)
+            }
         }
+    }
+
+    /**
+     * 搜索记录
+     */
+    suspend fun searchRecords(keyword: String): List<FuelRecord> {
+        return dao.searchRecords(keyword)
     }
 }

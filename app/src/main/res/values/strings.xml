@@ -21,6 +21,7 @@
     <string name="edit_record_title">编辑加油记录</string>
     <string name="delete_record">删除记录</string>
     <string name="edit_record">编辑记录</string>
+    <string name="refresh_consumption">重新计算油耗</string>
 
     <!-- 输入提示 -->
     <string name="date_hint">选择日期</string>
